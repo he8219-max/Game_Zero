@@ -1,903 +1,261 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gundam: Mobile Suit Battle</title>
-
+<meta name="theme-color" content="#07111f">
+<title>GUNDAM // NEON FRONTIER</title>
 <style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 15px;
-  background: #07111f;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-}
-
-h1 {
-  color: #32cfff;
-  text-shadow: 0 0 12px #008cff;
-}
-
-.stats {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin: 12px;
-  font-size: 18px;
-}
-
-canvas {
-  display: block;
-  width: 100%;
-  max-width: 800px;
-  height: auto;
-  margin: 15px auto;
-  border: 3px solid #28bfff;
-  border-radius: 8px;
-  background: #101d35;
-  box-shadow: 0 0 20px #0077bb;
-}
-
-button {
-  padding: 12px 20px;
-  margin: 5px;
-  border: 0;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 15px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-button:hover {
-  transform: scale(1.06);
-  filter: brightness(1.2);
-}
-
-#start {
-  background: #19c879;
-  color: white;
-}
-
-#pause {
-  background: #ffad24;
-}
-
-#play {
-  background: #238cff;
-  color: white;
-}
-
-#restart {
-  background: #e83242;
-  color: white;
-}
-
-.weapon-panel {
-  max-width: 800px;
-  margin: 15px auto;
-  padding: 15px;
-  border: 1px solid #277bb0;
-  border-radius: 10px;
-  background: #14263d;
-}
-
-.weapon-panel h3 {
-  color: #38d5ff;
-}
-
-.weapon {
-  display: inline-block;
-  padding: 8px 12px;
-  margin: 5px;
-  background: #203c5b;
-  border-radius: 6px;
-}
-
-.instructions {
-  color: #c6d9ed;
-  line-height: 1.8;
-}
-
-#message {
-  color: #ffdc43;
-  font-weight: bold;
-  min-height: 24px;
-}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+:root{--cyan:#58eaff;--blue:#328cff;--pink:#ff4ecb;--gold:#ffd45c;--panel:rgba(10,23,43,.86);--line:rgba(88,234,255,.24)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,#173b65 0%,#09172a 45%,#040914 100%);color:#eaf8ff;font-family:'Rajdhani',Arial,sans-serif;display:flex;justify-content:center;padding:22px 14px 34px}
+.shell{width:min(1120px,100%)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 16px}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:48px;height:48px;border:1px solid #64eaff;border-radius:13px;display:grid;place-items:center;color:var(--cyan);font-size:25px;background:linear-gradient(145deg,#12385b,#091326);box-shadow:0 0 22px #0c8fc955,inset 0 0 15px #35dfff22}
+h1{font:900 clamp(19px,3.3vw,30px) 'Orbitron',sans-serif;letter-spacing:1.8px;margin:0;text-shadow:0 0 18px #39bfff77}
+.subtitle{font-size:12px;letter-spacing:3px;color:#8caec8;margin-top:4px}
+.status-pill{border:1px solid var(--line);background:#0b1d31;border-radius:99px;padding:8px 13px;color:#9ecde2;font:700 11px 'Orbitron';letter-spacing:1px;white-space:nowrap}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.stat{background:linear-gradient(135deg,rgba(18,43,69,.94),rgba(7,17,32,.94));border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:inset 0 1px #ffffff0b}
+.stat-label{font:700 10px 'Orbitron';letter-spacing:1.5px;color:#80a9c5}
+.stat-value{font:800 23px 'Orbitron';margin-top:3px;color:#f3fbff}
+.meter{height:5px;background:#20344a;border-radius:10px;margin-top:7px;overflow:hidden}
+.meter span{display:block;height:100%;width:100%;background:linear-gradient(90deg,#18c9ff,#71f4ff);box-shadow:0 0 10px #26dfff;transition:width .15s}
+.stage{position:relative;border:1px solid #4bdcfb88;border-radius:16px;overflow:hidden;background:#071426;box-shadow:0 0 0 4px #071a2b,0 0 38px #007dbb35,0 20px 55px #0009}
+canvas{display:block;width:100%;height:auto;aspect-ratio:5/3;touch-action:none}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(120deg,#061323dd,#07172dcc);backdrop-filter:blur(5px);padding:20px;text-align:center}
+.overlay.hidden{display:none}
+.modal{max-width:500px;width:100%;padding:30px 24px;border:1px solid #59ddff66;border-radius:18px;background:linear-gradient(145deg,#102c48ee,#071323f5);box-shadow:0 0 45px #009ed533}
+.eyebrow{font:700 10px 'Orbitron';letter-spacing:3px;color:var(--cyan)}
+.modal h2{font:900 clamp(24px,5vw,42px) 'Orbitron';margin:10px 0;color:white;text-shadow:0 0 22px #20bfff77}
+.modal p{color:#a9c7db;font-size:17px;line-height:1.4;margin:0 0 20px}
+button{font:800 12px 'Orbitron';letter-spacing:1px;border:0;border-radius:9px;padding:13px 18px;cursor:pointer;color:#04111d;background:linear-gradient(100deg,#6af1ff,#4da9ff);box-shadow:0 5px 18px #1bbdff33;transition:transform .15s,filter .15s}
+button:hover{transform:translateY(-2px);filter:brightness(1.12)}
+button:active{transform:translateY(1px)}
+button.secondary{background:#172d45;color:#c5e7f5;border:1px solid #4a718d;box-shadow:none}
+button.danger{background:linear-gradient(100deg,#ff7d9c,#ffb15e);color:#27101a}
+.gamebar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 2px;flex-wrap:wrap}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+#message{font-weight:700;color:#a9d8ed;font-size:15px;min-height:20px}
+.lower{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 16px}
+.panel h3{font:700 11px 'Orbitron';letter-spacing:1.5px;color:var(--cyan);margin:0 0 11px}
+.weapon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.weapon{border:1px solid #294966;background:#0d2035;border-radius:9px;padding:9px;text-align:center}
+.weapon b{display:block;font:700 12px 'Orbitron';color:#e8f8ff}
+.weapon small{color:#8caec8;font-size:12px}
+kbd{font:700 11px 'Orbitron';color:#e7faff;background:#203c58;border:1px solid #47708d;border-radius:5px;padding:3px 6px}
+.controls{display:flex;flex-wrap:wrap;gap:8px 13px;color:#a9c7db;font-size:14px}
+.controls span{white-space:nowrap}
+.mobile-controls{display:none;gap:8px;justify-content:space-between;margin-top:10px}
+.pad{display:grid;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(2,38px);gap:4px}
+.pad button,.mobile-actions button{padding:5px;font-size:11px;touch-action:none}
+.pad button{background:#17334e;color:#bcefff;border:1px solid #3e7898}
+.mobile-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+footer{text-align:center;color:#5f829c;font-size:12px;margin-top:14px;letter-spacing:1px}
+@media(max-width:700px){body{padding:14px 9px 25px}.hud{grid-template-columns:repeat(2,1fr)}.lower{grid-template-columns:1fr}.status-pill{display:none}.mobile-controls{display:flex}.weapon-grid{grid-template-columns:repeat(3,1fr)}.gamebar{align-items:flex-start}#message{width:100%;order:2}}
+@media(max-width:390px){.weapon-grid{grid-template-columns:1fr 1fr}.actions button{padding:11px 12px}}
 </style>
 </head>
-
 <body>
+<div class="shell">
+<header>
+  <div class="brand"><div class="logo">✦</div><div><h1>NEON FRONTIER</h1><div class="subtitle">MOBILE SUIT COMBAT SYSTEM // 01</div></div></div>
+  <div class="status-pill">● SYSTEM ONLINE</div>
+</header>
 
-<h1>⚔ GUNDAM: MOBILE SUIT BATTLE ⚔</h1>
+<section class="hud">
+  <div class="stat"><div class="stat-label">SCORE</div><div class="stat-value" id="score">000000</div></div>
+  <div class="stat"><div class="stat-label">ARMOR INTEGRITY</div><div class="stat-value" id="health">100%</div><div class="meter"><span id="healthBar"></span></div></div>
+  <div class="stat"><div class="stat-label">SECTOR</div><div class="stat-value" id="wave">01</div></div>
+  <div class="stat"><div class="stat-label">ENERGY SHIELD</div><div class="stat-value" id="shieldStatus" style="font-size:17px;margin-top:8px">READY</div></div>
+</section>
 
-<div class="stats">
-  <span>🏆 Score: <b id="score">0</b></span>
-  <span>❤️ Health: <b id="health">100</b></span>
-  <span>🛡 Shield: <b id="shieldStatus">READY</b></span>
-</div>
-
-<canvas id="game" width="800" height="450"></canvas>
-
-<div>
-  <button id="start" onclick="startGame()">START</button>
-  <button id="pause" onclick="pauseGame()">PAUSE</button>
-  <button id="play" onclick="resumeGame()">PLAY</button>
-  <button id="restart" onclick="restartGame()">RESTART</button>
-</div>
-
-<div class="weapon-panel">
-  <h3>🚀 GUNDAM WEAPON SYSTEM</h3>
-
-  <div class="weapon">🔵 Beam Rifle: Unlimited</div>
-  <div class="weapon">⚔ Beam Saber: E</div>
-  <div class="weapon">
-    🚀 Missiles: <b id="missiles">8</b>
+<div class="stage">
+  <canvas id="game" width="1000" height="600" aria-label="Neon Frontier arcade game"></canvas>
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="eyebrow">EARTH DEFENSE FORCE // PILOT BRIEFING</div>
+      <h2 id="overlayTitle">LAUNCH SEQUENCE</h2>
+      <p id="overlayText">Your mobile suit is the last line of defense. Clear incoming enemy drones, survive each sector, and keep your reactor online.</p>
+      <button id="mainButton">▶ DEPLOY MOBILE SUIT</button>
+    </div>
   </div>
-  <div class="weapon">
-    💥 Mega Cannon: <b id="cannon">3</b>
-  </div>
-  <div class="weapon">🛡 Shield: F</div>
 </div>
 
-<p id="message">Press START to begin your battle!</p>
+<div class="gamebar">
+  <div id="message">Awaiting pilot authorization…</div>
+  <div class="actions">
+    <button class="secondary" id="pauseBtn">Ⅱ PAUSE</button>
+    <button class="danger" id="restartBtn">↻ RESTART</button>
+  </div>
+</div>
 
-<div class="instructions">
-  <b>CONTROLS</b><br>
-  W = Move Up | A = Move Left<br>
-  S = Move Down | D = Move Right<br>
-  SPACE = Beam Rifle | E = Beam Saber<br>
-  Q = Missile Launcher | R = Mega Beam Cannon<br>
-  F = Activate Gundam Shield
+<div class="lower">
+  <section class="panel">
+    <h3>WEAPON LOADOUT</h3>
+    <div class="weapon-grid">
+      <div class="weapon"><b>BEAM RIFLE</b><small><kbd>SPACE</kbd> ∞</small></div>
+      <div class="weapon"><b>BEAM SABER</b><small><kbd>E</kbd> close range</small></div>
+      <div class="weapon"><b>MISSILES</b><small><kbd>Q</kbd> <span id="missiles">8</span> left</small></div>
+      <div class="weapon"><b>MEGA BEAM</b><small><kbd>R</kbd> <span id="cannon">3</span> left</small></div>
+      <div class="weapon"><b>ENERGY SHIELD</b><small><kbd>F</kbd> 5 sec</small></div>
+      <div class="weapon"><b>REPAIR POD</b><small>Sector bonus</small></div>
+    </div>
+  </section>
+  <section class="panel">
+    <h3>PILOT CONTROLS</h3>
+    <div class="controls">
+      <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</span>
+      <span><kbd>SPACE</kbd> Fire</span>
+      <span><kbd>E</kbd> Saber</span>
+      <span><kbd>Q</kbd> Missile</span>
+      <span><kbd>R</kbd> Mega beam</span>
+      <span><kbd>F</kbd> Shield</span>
+      <span><kbd>P</kbd> Pause</span>
+    </div>
+  </section>
+</div>
+<div class="mobile-controls">
+  <div class="pad">
+    <span></span><button data-key="KeyW">▲</button><span></span>
+    <button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button>
+  </div>
+  <div class="mobile-actions">
+    <button data-key="Space">FIRE</button><button data-key="KeyE">SABER</button><button data-key="KeyQ">MISSILE</button><button data-key="KeyF">SHIELD</button>
+  </div>
+</div>
+<footer>NEON FRONTIER // ARCADE SIMULATION • GOOD LUCK, PILOT</footer>
 </div>
 
 <script>
-// ==================================
-// GUNDAM MOBILE SUIT BATTLE
-// ==================================
-
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-let player;
-let enemies = [];
-let bullets = [];
-let missiles = [];
-let cannonShots = [];
-
-let score = 0;
-let health = 100;
-
-let missileAmmo = 8;
-let cannonAmmo = 3;
-
-let running = false;
-let started = false;
-let gameOver = false;
-
-let keys = {};
-
-let lastShot = 0;
-let lastMissile = 0;
-let lastCannon = 0;
-let lastSaber = 0;
-let lastDamage = 0;
-let lastEnemySpawn = 0;
-
-let shieldUntil = 0;
-let shieldCooldown = 0;
-let saberUntil = 0;
-
-let animationId = null;
-
-// ==================================
-// RESET GAME
-// ==================================
-
-function resetGame() {
-  player = {
-    x: 90,
-    y: 220,
-    speed: 4
-  };
-
-  enemies = [];
-  bullets = [];
-  missiles = [];
-  cannonShots = [];
-
-  score = 0;
-  health = 100;
-
-  missileAmmo = 8;
-  cannonAmmo = 3;
-
-  lastShot = 0;
-  lastMissile = 0;
-  lastCannon = 0;
-  lastSaber = 0;
-  lastDamage = 0;
-  lastEnemySpawn = 0;
-
-  shieldUntil = 0;
-  shieldCooldown = 0;
-  saberUntil = 0;
-
-  gameOver = false;
-
-  keys = {};
-
-  updateUI();
+(() => {
+'use strict';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const W=1000,H=600,TAU=Math.PI*2;
+const $=id=>document.getElementById(id);
+let player,enemies=[],shots=[],missiles=[],particles=[],pickups=[];
+let score=0,health=100,missileAmmo=8,cannonAmmo=3,wave=1;
+let running=false,started=false,gameOver=false,raf=0,last=0,elapsed=0,spawnTimer=0;
+let keys=Object.create(null),pressed=Object.create(null);
+let lastShot=0,lastMissile=0,lastCannon=0,lastSaber=0,shieldUntil=0,shieldReady=0,saberUntil=0,shake=0;
+const stars=Array.from({length:130},()=>({x:Math.random()*W,y:Math.random()*H,z:.3+Math.random()*1.8,r:.5+Math.random()*1.5}));
+const skyline=Array.from({length:28},(_,i)=>({x:i*42,w:25+Math.random()*25,h:35+Math.random()*120}));
+function reset(){
+ player={x:145,y:300,invuln:0,tilt:0};enemies=[];shots=[];missiles=[];particles=[];pickups=[];
+ score=0;health=100;missileAmmo=8;cannonAmmo=3;wave=1;elapsed=0;spawnTimer=0;
+ lastShot=lastMissile=lastCannon=lastSaber=0;shieldUntil=0;shieldReady=0;saberUntil=0;shake=0;
+ updateUI();
 }
-
-// ==================================
-// GAME BUTTONS
-// ==================================
-
-function startGame() {
-  stopLoop();
-  resetGame();
-
-  started = true;
-  running = true;
-
-  document.getElementById("message").textContent =
-    "GUNDAM DEPLOYED! DESTROY THE ENEMY MOBILE SUITS!";
-
-  gameLoop();
-}
-
-function restartGame() {
-  startGame();
-}
-
-function pauseGame() {
-  if (!started || gameOver) return;
-
-  running = false;
-  stopLoop();
-  keys = {};
-
-  draw();
-}
-
-function resumeGame() {
-  if (!started) {
-    startGame();
-    return;
-  }
-
-  if (gameOver) return;
-
-  if (!running) {
-    running = true;
-    document.getElementById("message").textContent =
-      "BATTLE RESUMED!";
-    gameLoop();
-  }
-}
-
-function stopLoop() {
-  if (animationId !== null) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-}
-
-// ==================================
-// KEYBOARD CONTROLS
-// ==================================
-
-document.addEventListener("keydown", function(e) {
-  if ([
-    "Space", "ArrowUp", "ArrowDown",
-    "ArrowLeft", "ArrowRight"
-  ].includes(e.code)) {
-    e.preventDefault();
-  }
-
-  keys[e.code] = true;
+function setMessage(t){$('message').textContent=t}
+function start(){cancelAnimationFrame(raf);reset();started=true;gameOver=false;running=true;$('overlay').classList.add('hidden');setMessage('MOBILE SUIT DEPLOYED — DEFEND THE SECTOR!');last=performance.now();raf=requestAnimationFrame(loop)}
+function pause(){if(!started||gameOver)return;running=false;cancelAnimationFrame(raf);$('overlayTitle').textContent='SIMULATION PAUSED';$('overlayText').textContent='Your mobile suit is holding position. Resume when you are ready, pilot.';$('mainButton').textContent='▶ RESUME';$('overlay').classList.remove('hidden');setMessage('Simulation paused.')}
+function resume(){if(!started){start();return}if(gameOver)return;running=true;$('overlay').classList.add('hidden');last=performance.now();raf=requestAnimationFrame(loop);setMessage('SYSTEMS ONLINE — RESUMING COMBAT')}
+function end(){running=false;gameOver=true;cancelAnimationFrame(raf);$('overlayTitle').textContent='MISSION COMPLETE?';$('overlayText').textContent=`Your suit has powered down. Final score: ${score.toLocaleString()} • Sector reached: ${wave}. Refit and launch again!`;$('mainButton').textContent='↻ REDEPLOY';$('overlay').classList.remove('hidden');setMessage('MOBILE SUIT DISABLED — REDEPLOY TO TRY AGAIN');}
+$('mainButton').addEventListener('click',()=>{if(gameOver||!started)start();else resume()});
+$('pauseBtn').addEventListener('click',pause);$('restartBtn').addEventListener('click',start);
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(!keys[e.code])pressed[e.code]=true;keys[e.code]=true;if(e.code==='KeyP')running?pause():resume()});
+window.addEventListener('keyup',e=>{keys[e.code]=false});
+window.addEventListener('blur',()=>{keys=Object.create(null)});
+document.querySelectorAll('[data-key]').forEach(btn=>{
+ const code=btn.dataset.key;
+ const down=e=>{e.preventDefault();keys[code]=true;pressed[code]=true};
+ const up=e=>{e.preventDefault();keys[code]=false};
+ btn.addEventListener('pointerdown',down);btn.addEventListener('pointerup',up);btn.addEventListener('pointerleave',up);btn.addEventListener('pointercancel',up);
 });
-
-document.addEventListener("keyup", function(e) {
-  keys[e.code] = false;
-});
-
-window.addEventListener("blur", function() {
-  keys = {};
-});
-
-// ==================================
-// PLAYER MOVEMENT
-// ==================================
-
-function movePlayer() {
-
-  if (keys["KeyW"]) player.y -= player.speed;
-  if (keys["KeyS"]) player.y += player.speed;
-  if (keys["KeyA"]) player.x -= player.speed;
-  if (keys["KeyD"]) player.x += player.speed;
-
-  player.x = Math.max(35, Math.min(765, player.x));
-  player.y = Math.max(65, Math.min(405, player.y));
+function addBurst(x,y,color,n=12){for(let i=0;i<n;i++){let a=Math.random()*TAU,s=1+Math.random()*5;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:25+Math.random()*25,max:50,color,size:1+Math.random()*3})}}
+function spawnEnemy(){
+ const type=Math.random()<.22?'heavy':Math.random()<.35?'scout':'standard';
+ enemies.push({x:W+45,y:75+Math.random()*(H-165),type,hp:type==='heavy'?3:1,max:type==='heavy'?3:1,speed:(type==='scout'?2.7:type==='heavy'?1.05:1.65)+wave*.12,phase:Math.random()*TAU,age:0});
 }
-
-// ==================================
-// BEAM RIFLE
-// ==================================
-
-function fireWeapon(now) {
-
-  if (keys["Space"] && now - lastShot > 250) {
-
-    bullets.push({
-      x: player.x + 25,
-      y: player.y - 5
-    });
-
-    lastShot = now;
-  }
+function fire(){
+ const now=performance.now();
+ if(keys.Space&&now-lastShot>190){shots.push({x:player.x+42,y:player.y-4,vx:12,kind:'beam',life:90});lastShot=now}
+ if(keys.KeyQ&&missileAmmo>0&&now-lastMissile>650){missiles.push({x:player.x+30,y:player.y,vx:7,life:120});missileAmmo--;lastMissile=now}
+ if(keys.KeyR&&cannonAmmo>0&&now-lastCannon>1400){shots.push({x:player.x+25,y:player.y,vx:15,kind:'mega',life:65,pierce:99});cannonAmmo--;lastCannon=now;shake=7;addBurst(player.x+35,player.y,'#7df7ff',8)}
+ if(keys.KeyE&&now-lastSaber>700){saberUntil=now+260;lastSaber=now;let hit=0;enemies.forEach(e=>{if(Math.abs(e.x-player.x)<105&&Math.abs(e.y-player.y)<72){e.hp=0;hit++}});if(hit){score+=hit*25;addBurst(player.x+75,player.y,'#ff6be2',20)}}
+ if(keys.KeyF&&now>shieldReady&&now>shieldUntil){shieldUntil=now+4200;shieldReady=now+8500;setMessage('ENERGY SHIELD ACTIVE — IMPACTS DEFLECTED')}
 }
-
-// ==================================
-// MISSILE LAUNCHER
-// ==================================
-
-function fireMissile(now) {
-
-  if (
-    keys["KeyQ"] &&
-    missileAmmo > 0 &&
-    now - lastMissile > 700
-  ) {
-
-    missiles.push({
-      x: player.x + 20,
-      y: player.y,
-      speed: 6,
-      dead: false
-    });
-
-    missileAmmo--;
-    lastMissile = now;
-  }
+function update(dt,now){
+ elapsed+=dt;wave=1+Math.floor(score/180);player.invuln=Math.max(0,player.invuln-dt);
+ let dx=(keys.KeyD?1:0)-(keys.KeyA?1:0),dy=(keys.KeyS?1:0)-(keys.KeyW?1:0),len=Math.hypot(dx,dy)||1;
+ player.x=Math.max(55,Math.min(520,player.x+dx/len*4.4*dt/16.67));player.y=Math.max(75,Math.min(505,player.y+dy/len*4.4*dt/16.67));player.tilt+=(dy*.13-player.tilt)*.16;
+ fire();
+ spawnTimer+=dt;if(spawnTimer>Math.max(420,1350-wave*45)){spawnEnemy();spawnTimer=0}
+ shots.forEach(s=>{s.x+=s.vx*dt/16.67;s.life--;});
+ missiles.forEach(m=>{m.x+=m.vx*dt/16.67;m.life--;});
+ for(const e of enemies){e.x-=e.speed*dt/16.67;e.age+=dt;e.y+=Math.sin(e.age*.004+e.phase)*.55*dt/16.67;
+   for(const s of shots){if(s.life>0&&Math.abs(s.x-e.x)<27+(e.type==='heavy'?8:0)&&Math.abs(s.y-e.y)<28){e.hp--;s.life=0;if(s.kind==='mega')s.life=1;else addBurst(s.x,s.y,'#64eaff',4);if(e.hp<=0){score+=e.type==='heavy'?35:15;addBurst(e.x,e.y,e.type==='heavy'?'#ff9d5c':'#ff526d',e.type==='heavy'?24:15);if(Math.random()<.12)pickups.push({x:e.x,y:e.y,type:'repair',spin:0})}}}
+   for(const m of missiles){if(m.life>0&&Math.abs(m.x-e.x)<32&&Math.abs(m.y-e.y)<32){e.hp-=3;m.life=0;addBurst(e.x,e.y,'#ffb34e',22);if(e.hp<=0)score+=e.type==='heavy'?35:15}}
+   if(Math.abs(player.x-e.x)<34&&Math.abs(player.y-e.y)<35&&player.invuln<=0){if(now>shieldUntil){health-=e.type==='heavy'?17:10;player.invuln=900;shake=10;addBurst(player.x,player.y,'#ff6682',12)}else addBurst(e.x,e.y,'#70f5ff',8);e.hp=0}
+ }
+ enemies=enemies.filter(e=>e.hp>0&&e.x>-70);
+ shots=shots.filter(s=>s.life>0&&s.x<W+50);missiles=missiles.filter(m=>m.life>0&&m.x<W+80);
+ for(const p of pickups){p.x-=1.3*dt/16.67;p.spin+=dt*.006;if(Math.hypot(p.x-player.x,p.y-player.y)<35){health=Math.min(100,health+18);p.life=0;setMessage('REPAIR POD COLLECTED +18% ARMOR');addBurst(p.x,p.y,'#70ffbd',18)}}
+ pickups=pickups.filter(p=>p.life!==0&&p.x>-30);
+ particles.forEach(p=>{p.x+=p.vx*dt/16.67;p.y+=p.vy*dt/16.67;p.vx*=.98;p.vy*=.98;p.life-=dt/16.67});particles=particles.filter(p=>p.life>0);
+ stars.forEach(s=>{s.x-=s.z*dt*.018;if(s.x<0)s.x=W});
+ shake=Math.max(0,shake-dt*.025);
+ if(health<=0){health=0;updateUI();end();return}
+ updateUI();
 }
-
-// ==================================
-// BEAM SABER
-// ==================================
-
-function useSaber(now) {
-
-  if (
-    keys["KeyE"] &&
-    now - lastSaber > 800
-  ) {
-
-    saberUntil = now + 350;
-    lastSaber = now;
-
-    enemies.forEach(enemy => {
-
-      if (
-        Math.abs(enemy.x - player.x) < 80 &&
-        Math.abs(enemy.y - player.y) < 60
-      ) {
-
-        enemy.dead = true;
-        score += 20;
-      }
-    });
-  }
+function polygon(points,fill,stroke){ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}}
+function drawMech(x,y,enemy=false,heavy=false){
+ ctx.save();ctx.translate(x,y);if(enemy)ctx.scale(-1,1);
+ const main=enemy?(heavy?'#9d3853':'#a63e59'):'#dce9f4',dark=enemy?'#4e2945':'#315d91',accent=enemy?'#ffb15e':'#27dfff';
+ ctx.shadowColor=accent;ctx.shadowBlur=12;
+ // backpack and legs
+ ctx.fillStyle=dark;ctx.fillRect(-25,-23,14,45);ctx.fillRect(-15,18,13,25);ctx.fillRect(5,18,13,25);
+ polygon([[-20,39],[-3,39],[-1,49],[-24,49]],enemy?'#792c48':'#e34d59');
+ polygon([[3,39],[21,39],[25,49],[3,49]],enemy?'#792c48':'#e34d59');
+ // torso armor
+ polygon([[-22,-23],[-13,-34],[13,-34],[23,-22],[18,18],[-18,18]],main,'#8ab8d4');
+ polygon([[-12,-20],[0,-27],[12,-20],[9,5],[-9,5]],dark);
+ ctx.fillStyle=accent;ctx.fillRect(-7,-18,14,5);ctx.fillRect(-5,-7,10,3);
+ // shoulders and arms
+ polygon([[-22,-24],[-37,-29],[-42,-12],[-30,0],[-19,-5]],main,'#8ab8d4');
+ polygon([[22,-24],[37,-29],[42,-12],[30,0],[19,-5]],main,'#8ab8d4');
+ ctx.fillStyle=dark;ctx.fillRect(-37,-8,10,17);ctx.fillRect(27,-8,10,17);
+ // head
+ polygon([[-13,-34],[-10,-49],[0,-55],[10,-49],[14,-34],[8,-27],[-8,-27]],main,'#a8c9df');
+ polygon([[-9,-39],[0,-44],[9,-39],[7,-34],[-7,-34]],accent);
+ if(!enemy){polygon([[-9,-49],[-23,-62],[-16,-43]],'#ffd95b');polygon([[9,-49],[23,-62],[16,-43]],'#ffd95b');ctx.fillStyle='#ffd95b';ctx.fillRect(-3,-53,6,8)}
+ else{ctx.fillStyle='#ffbd67';ctx.fillRect(-3,-48,7,5)}
+ // rifle
+ ctx.fillStyle='#293f59';ctx.fillRect(29,-2,24,8);ctx.fillStyle=accent;ctx.fillRect(48,-1,9,5);
+ ctx.shadowBlur=0;ctx.restore();
 }
-
-// ==================================
-// MEGA BEAM CANNON
-// ==================================
-
-function fireCannon(now) {
-
-  if (
-    keys["KeyR"] &&
-    cannonAmmo > 0 &&
-    now - lastCannon > 1500
-  ) {
-
-    cannonShots.push({
-      y: player.y,
-      life: 20,
-      hitEnemies: []
-    });
-
-    cannonAmmo--;
-    lastCannon = now;
-  }
+function drawBackground(){
+ const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#07152b');g.addColorStop(.58,'#102c48');g.addColorStop(1,'#101d31');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ // distant planet
+ const rg=ctx.createRadialGradient(760,150,15,760,150,170);rg.addColorStop(0,'#3b7394');rg.addColorStop(.65,'#183b60');rg.addColorStop(1,'#10223d00');ctx.fillStyle=rg;ctx.beginPath();ctx.arc(760,150,170,0,TAU);ctx.fill();
+ stars.forEach(s=>{ctx.globalAlpha=.35+s.z*.3;ctx.fillStyle='#d5f7ff';ctx.fillRect(s.x,s.y,s.r,s.r)});ctx.globalAlpha=1;
+ ctx.fillStyle='#0a1b2d';skyline.forEach(b=>{ctx.fillRect(b.x,H-75-b.h,b.w,b.h);ctx.fillStyle='#1d5470';for(let yy=H-65-b.h;yy<H-80;yy+=18)for(let xx=b.x+6;xx<b.x+b.w-4;xx+=12){ctx.fillRect(xx,yy,3,5)}ctx.fillStyle='#0a1b2d'});
+ ctx.fillStyle='#16354b';ctx.fillRect(0,H-75,W,75);ctx.fillStyle='#2b8196';ctx.fillRect(0,H-76,W,2);
+ ctx.strokeStyle='#2d6c82';ctx.globalAlpha=.35;for(let x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,H-75);ctx.lineTo(x-80,H);ctx.stroke()}ctx.globalAlpha=1;
 }
-
-// ==================================
-// GUNDAM SHIELD
-// ==================================
-
-function activateShield(now) {
-
-  if (
-    keys["KeyF"] &&
-    now >= shieldCooldown &&
-    now >= shieldUntil
-  ) {
-
-    shieldUntil = now + 5000;
-    shieldCooldown = now + 8000;
-
-    document.getElementById("message").textContent =
-      "🛡 GUNDAM SHIELD ACTIVATED!";
-  }
+function draw(){
+ ctx.save();if(shake)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+ drawBackground();
+ enemies.forEach(e=>drawMech(e.x,e.y,true,e.type==='heavy'));
+ drawMech(player.x,player.y,false);
+ // shots and effects
+ shots.forEach(s=>{ctx.save();ctx.shadowBlur=s.kind==='mega'?28:13;ctx.shadowColor=s.kind==='mega'?'#ff78e6':'#55eaff';ctx.fillStyle=s.kind==='mega'?'#ff8ce8':'#c8fbff';ctx.fillRect(s.x,s.y-3,s.kind==='mega'?90:28,6);ctx.fillStyle='white';ctx.fillRect(s.x,s.y-1,s.kind==='mega'?70:18,2);ctx.restore()});
+ missiles.forEach(m=>{ctx.fillStyle='#ff9c45';ctx.shadowBlur=12;ctx.shadowColor='#ff6b31';ctx.fillRect(m.x-10,m.y-4,24,8);ctx.fillStyle='#fff0a3';ctx.fillRect(m.x-13,m.y-2,8,4);ctx.shadowBlur=0});
+ if(performance.now()<saberUntil){ctx.save();ctx.shadowBlur=25;ctx.shadowColor='#ff5ce1';ctx.fillStyle='#ff8be9';ctx.beginPath();ctx.moveTo(player.x+26,player.y-13);ctx.lineTo(player.x+118,player.y-36);ctx.lineTo(player.x+112,player.y-20);ctx.lineTo(player.x+26,player.y-4);ctx.fill();ctx.restore()}
+ if(performance.now()<shieldUntil){ctx.save();ctx.strokeStyle='#66f5ff';ctx.lineWidth=4;ctx.shadowBlur=25;ctx.shadowColor='#36dfff';ctx.beginPath();ctx.ellipse(player.x,player.y,57,67,0,0,TAU);ctx.stroke();ctx.restore()}
+ pickups.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.spin);ctx.fillStyle='#6dffb8';ctx.shadowBlur=18;ctx.shadowColor='#55ffad';ctx.fillRect(-10,-10,20,20);ctx.fillStyle='#123b36';ctx.fillRect(-2,-7,4,14);ctx.fillRect(-7,-2,14,4);ctx.restore()});
+ particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.size,p.size)});ctx.globalAlpha=1;
+ // small in-game telemetry
+ ctx.fillStyle='#a9d9ed';ctx.font='700 12px Orbitron';ctx.fillText('SECTOR '+String(wave).padStart(2,'0'),22,30);ctx.fillStyle='#4d8da9';ctx.fillRect(22,42,130,3);ctx.fillStyle='#5deaff';ctx.fillRect(22,42,Math.min(130,130*health/100),3);
+ ctx.restore();
 }
-
-// ==================================
-// ENEMY SPAWNING
-// ==================================
-
-function spawnEnemy(now) {
-
-  if (now - lastEnemySpawn > 1400) {
-
-    enemies.push({
-      x: 830,
-      y: 65 + Math.random() * 330,
-      speed: 1.5 + Math.random() * 1.5,
-      dead: false
-    });
-
-    lastEnemySpawn = now;
-  }
-}
-
-// ==================================
-// COLLISIONS AND DAMAGE
-// ==================================
-
-function updateCombat(now) {
-
-  // Normal beam bullets
-  bullets.forEach(b => {
-    b.x += 9;
-
-    enemies.forEach(e => {
-      if (
-        !e.dead &&
-        Math.abs(b.x - e.x) < 23 &&
-        Math.abs(b.y - e.y) < 23
-      ) {
-        e.dead = true;
-        b.dead = true;
-        score += 10;
-      }
-    });
-  });
-
-  bullets = bullets.filter(b =>
-    !b.dead && b.x < 820
-  );
-
-  // Missiles
-  missiles.forEach(m => {
-    m.x += m.speed;
-
-    enemies.forEach(e => {
-      if (
-        !e.dead &&
-        Math.abs(m.x - e.x) < 27 &&
-        Math.abs(m.y - e.y) < 27
-      ) {
-        e.dead = true;
-        m.dead = true;
-        score += 30;
-      }
-    });
-  });
-
-  missiles = missiles.filter(m =>
-    !m.dead && m.x < 820
-  );
-
-  // Mega cannon
-  cannonShots.forEach(c => {
-
-    enemies.forEach(e => {
-
-      if (
-        !e.dead &&
-        !c.hitEnemies.includes(e) &&
-        e.x > player.x &&
-        Math.abs(c.y - e.y) < 35
-      ) {
-
-        e.dead = true;
-        c.hitEnemies.push(e);
-        score += 50;
-      }
-    });
-
-    c.life--;
-  });
-
-  cannonShots = cannonShots.filter(c => c.life > 0);
-
-  // Enemies
-  enemies.forEach(e => {
-
-    e.x -= e.speed;
-
-    if (
-      Math.abs(player.x - e.x) < 32 &&
-      Math.abs(player.y - e.y) < 32 &&
-      now - lastDamage > 700
-    ) {
-
-      if (now >= shieldUntil) {
-        health -= 10;
-        lastDamage = now;
-      } else {
-        // Shield blocks damage.
-        lastDamage = now;
-      }
-
-      e.dead = true;
-    }
-
-    if (e.x < -30) {
-      e.dead = true;
-    }
-  });
-
-  enemies = enemies.filter(e => !e.dead);
-
-  health = Math.max(0, health);
-
-  if (health <= 0) {
-    endGame();
-  }
-}
-
-// ==================================
-// GAME UPDATE
-// ==================================
-
-function update(now) {
-
-  movePlayer();
-
-  fireWeapon(now);
-  fireMissile(now);
-  useSaber(now);
-  fireCannon(now);
-  activateShield(now);
-
-  spawnEnemy(now);
-  updateCombat(now);
-
-  updateUI();
-}
-
-// ==================================
-// DRAW GUNDAM
-// ==================================
-
-function drawGundam(x, y) {
-
-  // Legs
-  ctx.fillStyle = "#e7edf5";
-  ctx.fillRect(x-13, y+15, 11, 27);
-  ctx.fillRect(x+3, y+15, 11, 27);
-
-  // Feet
-  ctx.fillStyle = "#e52f45";
-  ctx.fillRect(x-17, y+38, 16, 7);
-  ctx.fillRect(x+1, y+38, 16, 7);
-
-  // Body
-  ctx.fillStyle = "#174fe5";
-  ctx.fillRect(x-16, y-17, 32, 36);
-
-  // Chest detail
-  ctx.fillStyle = "#f5d329";
-  ctx.fillRect(x-7, y-12, 14, 12);
-
-  // Arms
-  ctx.fillStyle = "#e5eaf0";
-  ctx.fillRect(x-25, y-15, 9, 28);
-  ctx.fillRect(x+16, y-15, 9, 28);
-
-  // Head
-  ctx.fillStyle = "#f0f0f0";
-  ctx.fillRect(x-11, y-39, 22, 22);
-
-  // Yellow V-fin
-  ctx.fillStyle = "#ffdc19";
-
-  ctx.beginPath();
-  ctx.moveTo(x-8, y-35);
-  ctx.lineTo(x-25, y-49);
-  ctx.lineTo(x-16, y-27);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(x+8, y-35);
-  ctx.lineTo(x+25, y-49);
-  ctx.lineTo(x+16, y-27);
-  ctx.fill();
-
-  // Eyes
-  ctx.fillStyle = "#00eaff";
-  ctx.fillRect(x-8, y-30, 16, 5);
-}
-
-// ==================================
-// DRAW ENEMY
-// ==================================
-
-function drawEnemy(x, y) {
-
-  ctx.fillStyle = "#a52a38";
-  ctx.fillRect(x-15, y-15, 30, 30);
-
-  ctx.fillStyle = "#c7c7c7";
-  ctx.fillRect(x-10, y-27, 20, 14);
-
-  ctx.fillStyle = "#ffcc00";
-  ctx.fillRect(x-7, y-23, 14, 4);
-
-  ctx.fillStyle = "#777";
-  ctx.fillRect(x-23, y-12, 8, 27);
-  ctx.fillRect(x+15, y-12, 8, 27);
-}
-
-// ==================================
-// DRAW BONUS WEAPONS
-// ==================================
-
-function drawBonusWeapons(now) {
-
-  // Beam rifle bullets
-  bullets.forEach(b => {
-    ctx.fillStyle = "#00eeff";
-    ctx.fillRect(b.x, b.y, 20, 5);
-
-    ctx.fillStyle = "white";
-    ctx.fillRect(b.x, b.y+1, 12, 2);
-  });
-
-  // Missiles
-  missiles.forEach(m => {
-
-    ctx.fillStyle = "#ff8700";
-    ctx.fillRect(m.x, m.y-4, 24, 9);
-
-    ctx.fillStyle = "#ffec39";
-    ctx.fillRect(m.x-8, m.y-2, 8, 5);
-  });
-
-  // Mega cannon
-  cannonShots.forEach(c => {
-
-    ctx.fillStyle = "#00eaff";
-    ctx.fillRect(
-      player.x+20,
-      c.y-12,
-      800-player.x,
-      24
-    );
-
-    ctx.fillStyle = "white";
-    ctx.fillRect(
-      player.x+20,
-      c.y-4,
-      800-player.x,
-      8
-    );
-  });
-
-  // Beam saber
-  if (now < saberUntil) {
-
-    ctx.fillStyle = "#ff35d5";
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "#ff35d5";
-
-    ctx.fillRect(
-      player.x+15,
-      player.y-8,
-      75,
-      9
-    );
-
-    ctx.shadowBlur = 0;
-  }
-
-  // Gundam shield
-  if (now < shieldUntil) {
-
-    ctx.strokeStyle = "#00eaff";
-    ctx.lineWidth = 5;
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = "#00eaff";
-
-    ctx.beginPath();
-    ctx.ellipse(
-      player.x,
-      player.y,
-      42,
-      55,
-      0,
-      0,
-      Math.PI*2
-    );
-
-    ctx.stroke();
-
-    ctx.shadowBlur = 0;
-  }
-}
-
-// ==================================
-// DRAW BACKGROUND
-// ==================================
-
-function drawBackground() {
-
-  ctx.fillStyle = "#101d35";
-  ctx.fillRect(0, 0, 800, 450);
-
-  // Stars
-  ctx.fillStyle = "white";
-
-  for (let i = 0; i < 60; i++) {
-
-    let x = (i * 137) % 800;
-    let y = (i * 83) % 420;
-
-    ctx.fillRect(x, y, 2, 2);
-  }
-
-  // Ground
-  ctx.fillStyle = "#263d52";
-  ctx.fillRect(0, 425, 800, 25);
-
-  ctx.fillStyle = "#4c7189";
-  ctx.fillRect(0, 425, 800, 3);
-}
-
-// ==================================
-// DRAW GAME
-// ==================================
-
-function draw() {
-
-  const now = performance.now();
-
-  drawBackground();
-
-  missiles.forEach(m => {});
-  enemies.forEach(e => drawEnemy(e.x, e.y));
-
-  if (player) {
-    drawGundam(player.x, player.y);
-    drawBonusWeapons(now);
-  }
-
-  if (!running && started && !gameOver) {
-
-    ctx.fillStyle = "rgba(0,0,0,0.65)";
-    ctx.fillRect(0, 0, 800, 450);
-
-    ctx.fillStyle = "white";
-    ctx.font = "bold 42px Arial";
-    ctx.fillText("PAUSED", 320, 220);
-  }
-
-  if (gameOver) {
-
-    ctx.fillStyle = "rgba(0,0,0,0.75)";
-    ctx.fillRect(0, 0, 800, 450);
-
-    ctx.fillStyle = "#ff4242";
-    ctx.font = "bold 45px Arial";
-    ctx.fillText("GAME OVER", 275, 210);
-
-    ctx.fillStyle = "white";
-    ctx.font = "22px Arial";
-    ctx.fillText(
-      "Final Score: " + score,
-      325,
-      255
-    );
-
-    ctx.fillText(
-      "Press RESTART to battle again!",
-      245,
-      295
-    );
-  }
-}
-
-// ==================================
-// UPDATE DISPLAY
-// ==================================
-
-function updateUI() {
-
-  document.getElementById("score").textContent = score;
-  document.getElementById("health").textContent = health;
-
-  document.getElementById("missiles").textContent =
-    missileAmmo;
-
-  document.getElementById("cannon").textContent =
-    cannonAmmo;
-
-  const now = performance.now();
-  const shieldText =
-    now < shieldUntil ? "ACTIVE" :
-    now < shieldCooldown ? "RECHARGING" :
-    "READY";
-
-  document.getElementById("shieldStatus").textContent =
-    shieldText;
-}
-
-// ==================================
-// GAME OVER
-// ==================================
-
-function endGame() {
-
-  health = 0;
-  running = false;
-  gameOver = true;
-
-  stopLoop();
-
-  document.getElementById("message").textContent =
-    "GUNDAM DESTROYED! RESTART TO TRY AGAIN.";
-
-  updateUI();
-  draw();
-}
-
-// ==================================
-// MAIN GAME LOOP
-// ==================================
-
-function gameLoop() {
-
-  if (!running) return;
-
-  const now = performance.now();
-
-  update(now);
-  draw();
-
-  if (running) {
-    animationId = requestAnimationFrame(gameLoop);
-  }
-}
-
-// ==================================
-// INITIAL SCREEN
-// ==================================
-
-resetGame();
-draw();
-
+function updateUI(){$('score').textContent=String(score).padStart(6,'0');$('health').textContent=health+'%';$('healthBar').style.width=health+'%';$('healthBar').style.background=health<30?'linear-gradient(90deg,#ff526d,#ffad64)':'linear-gradient(90deg,#18c9ff,#71f4ff)';$('wave').textContent=String(wave).padStart(2,'0');$('missiles').textContent=missileAmmo;$('cannon').textContent=cannonAmmo;$('shieldStatus').textContent=performance.now()<shieldUntil?'ACTIVE':performance.now()<shieldReady?'RECHARGING':'READY'}
+function loop(now){if(!running)return;const dt=Math.min(32,now-last||16.67);last=now;update(dt,now);draw();if(running)raf=requestAnimationFrame(loop)}
+reset();draw();
+})();
 </script>
 </body>
 </html>
